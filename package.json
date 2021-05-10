@@ -19,5 +19,11 @@
   "bugs": {
     "url": "https://github.com/nuintun/swc-plugin-import/issues"
   },
-  "homepage": "https://github.com/nuintun/swc-plugin-import#readme"
+  "homepage": "https://github.com/nuintun/swc-plugin-import#readme",
+  "dependencies": {
+    "@swc/core": "^1.2.55"
+  },
+  "devDependencies": {
+    "typescript": "^4.2.4"
+  }
 }
