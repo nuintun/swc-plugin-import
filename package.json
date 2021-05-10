@@ -1,0 +1,23 @@
+{
+  "name": "swc-plugin-import",
+  "version": "0.0.0",
+  "description": "Component modular import plugin for swc.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuintun/swc-plugin-import.git"
+  },
+  "keywords": [
+    "antd",
+    "swc-plugin"
+  ],
+  "author": "nuintun",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nuintun/swc-plugin-import/issues"
+  },
+  "homepage": "https://github.com/nuintun/swc-plugin-import#readme"
+}

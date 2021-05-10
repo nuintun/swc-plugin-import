@@ -1,2 +1,3 @@
 # swc-plugin-import
-Modularly import plugin for babel.
+
+Modularly import plugin for swc.
