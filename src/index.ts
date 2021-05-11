@@ -1,27 +1,35 @@
-import { Module, ModuleItem, parseSync, Script } from '@swc/core';
+import { ImportSpecifier, ModuleItem, parseSync, Program } from '@swc/core';
 
-function createImport(alias: string, module: string, library: string) {
+function getImported(specifier: ImportSpecifier): string {
+  if ('imported' in specifier && specifier.imported) {
+    return specifier.imported.value;
+  }
+
+  return specifier.local.value;
+}
+
+function createImport(imported: string, local: string, source: string): ModuleItem[] {
   const code = `
-    import '${library}/es/style';
-    impport ${alias || module} from '${library}/es/${module}'
+    import '${source}/es/${imported}/style';
+    import ${local} from '${source}/es/${imported}'
   `;
 
   return parseSync(code).body;
 }
 
-export default (program: Module | Script) => {
+export default (program: Program): Program => {
   if (program.type === 'Script') return program;
 
   program.body = program.body.reduce<ModuleItem[]>((body, item) => {
     if (item.type === 'ImportDeclaration') {
-      const library = item.source.value;
+      const source = item.source.value;
 
-      if (library === 'antd') {
+      if (source === 'antd') {
         item.specifiers.forEach(specifier => {
-          const alias = specifier.local.value;
-          const module = (specifier as any).imported ? (specifier as any).imported.value : alias;
+          const local = specifier.local.value;
+          const imported = getImported(specifier);
 
-          body.push(...createImport(alias, module, library));
+          body.push(...createImport(imported, local, source));
         });
 
         return body;
