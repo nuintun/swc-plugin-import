@@ -11,7 +11,7 @@ function getImported(specifier: ImportSpecifier): string {
 function createImport(imported: string, local: string, source: string): ModuleItem[] {
   const code = `
     import '${source}/es/${imported}/style';
-    import ${local} from '${source}/es/${imported}'
+    import ${local} from '${source}/es/${imported}';
   `;
 
   return parseSync(code).body;
