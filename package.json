@@ -21,9 +21,9 @@
   },
   "homepage": "https://github.com/nuintun/swc-plugin-import#readme",
   "dependencies": {
-    "@swc/core": "^1.2.57"
+    "@swc/core": "^1.2.66"
   },
   "devDependencies": {
-    "typescript": "^4.2.4"
+    "typescript": "^4.3.5"
   }
 }
