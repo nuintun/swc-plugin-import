@@ -1,6 +1,13 @@
+import { name } from '../package.json';
 import { ImportSpecifier, ModuleItem, parseSync, Program } from '@swc/core';
 
-function getImported(specifier: ImportSpecifier): string {
+const { toString } = Object.prototype;
+
+function isString(value: any): value is string {
+  return toString.call(value) === '[object String]';
+}
+
+function resolveImported(specifier: ImportSpecifier): string {
   if ('imported' in specifier && specifier.imported) {
     return specifier.imported.value;
   }
@@ -8,38 +15,57 @@ function getImported(specifier: ImportSpecifier): string {
   return specifier.local.value;
 }
 
-function createImport(imported: string, local: string, source: string): ModuleItem[] {
-  const code = `
-    import '${source}/es/${imported}/style';
-    import ${local} from '${source}/es/${imported}';
-  `;
+function isMatch(match: string | RegExp, source: string): boolean | never {
+  if (isString(match)) return match === source;
 
-  return parseSync(code).body;
+  if (match instanceof RegExp) return match.test(source);
+
+  throw new SyntaxError(`[${name}] match must be string or regexp`);
 }
 
-export default (program: Program): Program => {
-  if (program.type === 'Script') return program;
+function isImports(body: ModuleItem[]): boolean {
+  return body.length > 0 && body.every(item => item.type === 'ImportDeclaration');
+}
 
-  program.body = program.body.reduce<ModuleItem[]>((body, item) => {
-    if (item.type === 'ImportDeclaration') {
-      const source = item.source.value;
+export type Transform = (imported: string, local: string, source: string) => string;
 
-      if (source === 'antd') {
-        item.specifiers.forEach(specifier => {
-          const local = specifier.local.value;
-          const imported = getImported(specifier);
+export default (match: string | RegExp, transform: Transform) => {
+  const createImport = (imported: string, local: string, source: string): ModuleItem[] | never => {
+    const code = transform(imported, local, source);
 
-          body.push(...createImport(imported, local, source));
-        });
+    if (isString(code)) {
+      const { body } = parseSync(code);
 
-        return body;
-      }
+      if (isImports(body)) return body;
     }
 
-    body.push(item);
+    throw new SyntaxError(`[${name}] transform must only return import declaration`);
+  };
 
-    return body;
-  }, []);
+  return (program: Program): Program => {
+    if (program.type === 'Script') return program;
 
-  return program;
+    program.body = program.body.reduce<ModuleItem[]>((body, item) => {
+      if (item.type === 'ImportDeclaration') {
+        const source = item.source.value;
+
+        if (isMatch(match, source)) {
+          item.specifiers.forEach(specifier => {
+            const local = specifier.local.value;
+            const imported = resolveImported(specifier);
+
+            body.push(...createImport(imported, local, source));
+          });
+
+          return body;
+        }
+      }
+
+      body.push(item);
+
+      return body;
+    }, []);
+
+    return program;
+  };
 };
